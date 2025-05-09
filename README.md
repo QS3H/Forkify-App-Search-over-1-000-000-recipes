@@ -33,12 +33,14 @@ A modern recipe application built with JavaScript, Parcel, and SCSS. Forkify all
    npm install
    ```
 3. **Run the development server:**
+
    ```bash
    $env:TEMP="D:\Portfolio Projects\Course Projects\JavaScript Projects\Forkify-App\.parcel-cache"
    $env:TMP="D:\Portfolio Projects\Course Projects\JavaScript Projects\Forkify-App\.parcel-cache"
    npm run start
    ```
-   *(On Windows, set TEMP and TMP as above if your project is not on the C: drive)*
+
+   _(On Windows, set TEMP and TMP as above if your project is not on the C: drive)_
 
 4. **Open the app:**
    Visit [http://localhost:1234](http://localhost:1234) in your browser.
@@ -55,7 +57,10 @@ A modern recipe application built with JavaScript, Parcel, and SCSS. Forkify all
 
 ## Screenshots
 
-*(Add screenshots of your app here!)*
+[Main Screen](./src/img/Forkify-empty-screenshot.png)
+[Search Results Screen](./src/img/Forkify-filled-screenshot.png)
+[Upload Recipe Screen](./src/img/Forkify-upload-recipe-screenshot.png)
+[Bookmarks Screen](./src/img/Fokrify-bookmarks-screenshot.png)
 
 ## Credits
 
