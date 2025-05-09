@@ -57,10 +57,10 @@ A modern recipe application built with JavaScript, Parcel, and SCSS. Forkify all
 
 ## Screenshots
 
-[Main Screen](./src/img/Forkify-empty-screenshot.png)
-[Search Results Screen](./src/img/Forkify-filled-screenshot.png)
-[Upload Recipe Screen](./src/img/Forkify-upload-recipe-screenshot.png)
-[Bookmarks Screen](./src/img/Fokrify-bookmarks-screenshot.png)
+![Main Screen](./src/img/Forkify-empty-screenshot.png)
+![Search Results Screen](./src/img/Forkify-filled-screenshot.png)
+![Upload Recipe Screen](./src/img/Forkify-upload-recipe-screenshot.png)
+![Bookmarks Screen](./src/img/Fokrify-bookmarks-screenshot.png)
 
 ## Credits
 
