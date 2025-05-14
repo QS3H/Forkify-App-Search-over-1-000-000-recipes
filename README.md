@@ -67,6 +67,4 @@ A modern recipe application built with JavaScript, Parcel, and SCSS. Forkify all
 - [Forkify API by Jonas Schmedtmann](https://forkify-api.herokuapp.com/)
 - Original project inspired by Jonas Schmedtmann's "The Complete JavaScript Course".
 
----
 
-Feel free to fork, contribute, or reach out if you have questions!
