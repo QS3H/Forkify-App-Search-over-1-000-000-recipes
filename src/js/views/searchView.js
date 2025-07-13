@@ -1,3 +1,6 @@
+import { debounce } from '../helpers.js';
+import { DEBOUNCE_DELAY } from '../config.js';
+
 class SearchView {
   _parentEl = document.querySelector('.search');
 
@@ -16,6 +19,12 @@ class SearchView {
       e.preventDefault();
       handler();
     });
+
+    // Add debounced search for real-time suggestions
+    const debouncedHandler = debounce(handler, DEBOUNCE_DELAY);
+    this._parentEl
+      .querySelector('.search__field')
+      .addEventListener('input', debouncedHandler);
   }
 }
 

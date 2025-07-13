@@ -9,7 +9,20 @@ import addRecipeView from './views/addRecipeView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import { async } from 'regenerator-runtime';
+
+// Register Service Worker
+const registerServiceWorker = async () => {
+  if ('serviceWorker' in navigator) {
+    try {
+      // Use dynamic import for service worker registration
+      const swUrl = new URL('/sw.js', window.location.origin).href;
+      const registration = await navigator.serviceWorker.register(swUrl);
+      console.log('SW registered: ', registration);
+    } catch (registrationError) {
+      console.log('SW registration failed: ', registrationError);
+    }
+  }
+};
 
 const controlRecipes = async function () {
   try {
@@ -30,29 +43,31 @@ const controlRecipes = async function () {
     // 3) Rendering recipe
     recipeView.render(model.state.recipe);
   } catch (err) {
-    recipeView.renderError();
-    console.error(err);
+    console.error('Recipe loading error:', err);
+    recipeView.renderError(err.message);
   }
 };
 
 const controlSearchResults = async function () {
   try {
-    resultsView.renderSpinner();
-
     // 1) Get search query
     const query = searchView.getQuery();
     if (!query) return;
 
-    // 2) Load search results
+    // 2) Show loading state
+    resultsView.renderSpinner();
+
+    // 3) Load search results
     await model.loadSearchResults(query);
 
-    // 3) Render results
+    // 4) Render results
     resultsView.render(model.getSearchResultsPage());
 
-    // 4) Render initial pagination buttons
+    // 5) Render initial pagination buttons
     paginationView.render(model.state.search);
   } catch (err) {
-    console.log(err);
+    console.error('Search error:', err);
+    resultsView.renderError(err.message);
   }
 };
 
@@ -114,12 +129,34 @@ const controlAddRecipe = async function (newRecipe) {
       addRecipeView.toggleWindow();
     }, MODAL_CLOSE_SEC * 1000);
   } catch (err) {
-    console.error('💥', err);
+    console.error('Recipe upload error:', err);
     addRecipeView.renderError(err.message);
   }
 };
 
+// Add keyboard navigation support
+const addKeyboardSupport = function () {
+  document.addEventListener('keydown', function (e) {
+    // Escape key to close modals
+    if (e.key === 'Escape') {
+      const modal = document.querySelector('.add-recipe-window');
+      if (!modal.classList.contains('hidden')) {
+        addRecipeView.toggleWindow();
+      }
+    }
+
+    // Enter key to submit search
+    if (
+      e.key === 'Enter' &&
+      document.activeElement.classList.contains('search__field')
+    ) {
+      document.querySelector('.search').dispatchEvent(new Event('submit'));
+    }
+  });
+};
+
 const init = function () {
+  registerServiceWorker();
   bookmarksView.addHandlerRender(controlBookmarks);
   recipeView.addHandlerRender(controlRecipes);
   recipeView.addHandlerUpdateServings(controlServings);
@@ -127,5 +164,6 @@ const init = function () {
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
   addRecipeView.addHandlerUpload(controlAddRecipe);
+  addKeyboardSupport();
 };
 init();

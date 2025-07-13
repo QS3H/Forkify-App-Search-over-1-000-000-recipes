@@ -1,4 +1,3 @@
-import { async } from 'regenerator-runtime';
 import { API_URL, RES_PER_PAGE, KEY } from './config.js';
 import { AJAX } from './helpers.js';
 
@@ -28,9 +27,22 @@ const createRecipeObject = function (data) {
   };
 };
 
+// Retry logic for failed requests
+const retryRequest = async function (requestFn, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await requestFn();
+    } catch (err) {
+      if (i === maxRetries - 1) throw err;
+      // Wait before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+    }
+  }
+};
+
 export const loadRecipe = async function (id) {
   try {
-    const data = await AJAX(`${API_URL}${id}?key=${KEY}`);
+    const data = await retryRequest(() => AJAX(`${API_URL}${id}?key=${KEY}`));
     state.recipe = createRecipeObject(data);
 
     if (state.bookmarks.some(bookmark => bookmark.id === id))
@@ -39,9 +51,12 @@ export const loadRecipe = async function (id) {
 
     console.log(state.recipe);
   } catch (err) {
-    // Temp error handling
-    console.error(`${err} 💥💥💥💥`);
-    throw err;
+    console.error(`Failed to load recipe ${id}:`, err);
+    throw new Error(
+      err.message.includes('404')
+        ? 'Recipe not found. Please check the URL and try again.'
+        : 'Failed to load recipe. Please check your internet connection and try again.'
+    );
   }
 };
 
@@ -49,7 +64,9 @@ export const loadSearchResults = async function (query) {
   try {
     state.search.query = query;
 
-    const data = await AJAX(`${API_URL}?search=${query}&key=${KEY}`);
+    const data = await retryRequest(() =>
+      AJAX(`${API_URL}?search=${query}&key=${KEY}`)
+    );
     console.log(data);
 
     state.search.results = data.data.recipes.map(rec => {
@@ -63,8 +80,12 @@ export const loadSearchResults = async function (query) {
     });
     state.search.page = 1;
   } catch (err) {
-    console.error(`${err} 💥💥💥💥`);
-    throw err;
+    console.error(`Failed to search for "${query}":`, err);
+    throw new Error(
+      err.message.includes('404')
+        ? 'No recipes found for your search. Please try different keywords.'
+        : 'Search failed. Please check your internet connection and try again.'
+    );
   }
 };
 
@@ -117,41 +138,32 @@ const init = function () {
 };
 init();
 
-const clearBookmarks = function () {
-  localStorage.clear('bookmarks');
-};
-// clearBookmarks();
-
 export const uploadRecipe = async function (newRecipe) {
-  try {
-    const ingredients = Object.entries(newRecipe)
-      .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
-      .map(ing => {
-        const ingArr = ing[1].split(',').map(el => el.trim());
-        if (ingArr.length !== 3)
-          throw new Error(
-            'Wrong ingredient fromat! Please use the correct format :)'
-          );
+  const ingredients = Object.entries(newRecipe)
+    .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
+    .map(ing => {
+      const ingArr = ing[1].split(',').map(el => el.trim());
+      if (ingArr.length !== 3)
+        throw new Error(
+          'Wrong ingredient fromat! Please use the correct format :)'
+        );
 
-        const [quantity, unit, description] = ingArr;
+      const [quantity, unit, description] = ingArr;
 
-        return { quantity: quantity ? +quantity : null, unit, description };
-      });
+      return { quantity: quantity ? +quantity : null, unit, description };
+    });
 
-    const recipe = {
-      title: newRecipe.title,
-      source_url: newRecipe.sourceUrl,
-      image_url: newRecipe.image,
-      publisher: newRecipe.publisher,
-      cooking_time: +newRecipe.cookingTime,
-      servings: +newRecipe.servings,
-      ingredients,
-    };
+  const recipe = {
+    title: newRecipe.title,
+    source_url: newRecipe.sourceUrl,
+    image_url: newRecipe.image,
+    publisher: newRecipe.publisher,
+    cooking_time: +newRecipe.cookingTime,
+    servings: +newRecipe.servings,
+    ingredients,
+  };
 
-    const data = await AJAX(`${API_URL}?key=${KEY}`, recipe);
-    state.recipe = createRecipeObject(data);
-    addBookmark(state.recipe);
-  } catch (err) {
-    throw err;
-  }
+  const data = await AJAX(`${API_URL}?key=${KEY}`, recipe);
+  state.recipe = createRecipeObject(data);
+  addBookmark(state.recipe);
 };
