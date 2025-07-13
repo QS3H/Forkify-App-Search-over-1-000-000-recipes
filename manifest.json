@@ -1,0 +1,21 @@
+{
+  "name": "Forkify - Recipe Search App",
+  "short_name": "Forkify",
+  "description": "Search and discover delicious recipes from around the world",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f59a83",
+  "theme_color": "#f59a83",
+  "icons": [
+    {
+      "src": "src/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "src/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
